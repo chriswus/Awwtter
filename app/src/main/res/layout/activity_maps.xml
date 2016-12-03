@@ -7,24 +7,9 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="170dp">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/sky"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_alignParentBottom="true"
-            android:background="@drawable/gradientsky"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+
 
         <fragment
             android:id="@+id/map"
@@ -49,6 +34,42 @@
             <!--android:layout_height="match_parent"-->
             <!--android:background="@drawable/otter_cups"-->
             <!--/>-->
+
+        <ImageView
+            android:id="@+id/energy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/energy"
+            android:paddingLeft="17dp"
+            android:paddingTop="50dp"/>
+
+        <TextView
+            android:id="@+id/energy_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="37dp"
+            android:paddingTop="20dp"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="30sp"
+            />
+
+        <ImageView
+            android:id="@+id/clam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/clam"
+            android:paddingLeft="17dp"
+            android:paddingTop="90dp"/>
+
+        <TextView
+            android:id="@+id/clam_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="37dp"
+            android:paddingTop="60dp"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="30sp"
+            />
 
     </RelativeLayout>
 

@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -35,13 +36,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicMapDemoActivity extends FragmentActivity implements
-        OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+        OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveStartedListener {
 
-    //hard code all test locations for now
+    //Constants
     private static final LatLng ABP = new LatLng(40.444205, -79.942117);
     private static final LatLng WEAN = new LatLng(40.442851, -79.945763);
     private static final LatLng SCOTT = new LatLng(40.443098, -79.946762);
     private static final LatLng NSH = new LatLng(40.443608, -79.945603);
+    private static final LatLng HOMETEST = new LatLng(40.438080, -79.927693);
+
+    //Views
+    private TextView mClamCountView;
+    private TextView mEnergyCountView;
+
+    //Models
+    private int mClamCount = 0;
+    private int mEnergyCount = 0;
+
 
 
     private LocationManager mLocationManager;
@@ -49,6 +60,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private String mBestProvider;
     private Criteria mCriteria;
     private Location mLocation;
+    private List<Marker> markers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +85,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+        initUIs();
     }
 
     @Override
@@ -111,6 +124,16 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         setupMap();
     }
 
+    private void initUIs() {
+
+        mClamCountView = (TextView) findViewById(R.id.clam_counter);
+        updateClamCount();
+        mEnergyCountView = (TextView) findViewById(R.id.energy_counter);
+        updateEnergyCount();
+
+    }
+
+
     private void setupMap() {
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -120,12 +143,13 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         }
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setScrollGesturesEnabled(false);
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setIndoorLevelPickerEnabled(true);
         mMap.setBuildingsEnabled(true);
         mMap.setIndoorEnabled(true);
-        addMarkersToMap();
+        initMarkersToMap();
         mMap.setOnMarkerClickListener(this);
     }
 
@@ -135,7 +159,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
             try {
-                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+                locationMode = Settings.Secure.getInt(context.getContentResolver(),
+                        Settings.Secure.LOCATION_MODE);
 
             } catch (Settings.SettingNotFoundException e) {
                 e.printStackTrace();
@@ -145,7 +170,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             return locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
         }else{
-            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            locationProviders = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
         }
 
@@ -153,9 +179,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     }
 
 
-    private void addMarkersToMap() {
+    private void initMarkersToMap() {
         //marker of my current location. Might end up as a tile overlay
-        mMap.addMarker(new MarkerOptions()
+        //current location is not updated
+        Marker myMarker = mMap.addMarker(new MarkerOptions()
                 .flat(true)
                 .icon(BitmapDescriptorFactory
                         .fromResource(R.drawable.otter_orig))
@@ -163,51 +190,140 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                 .position(
                         new LatLng(mLocation.getLatitude(),
                                 mLocation.getLongitude())));
+        Log.e("LOCATION", mLocation.getLatitude() + ", " + mLocation.getLongitude());
 
-        mMap.addMarker(new MarkerOptions()
+        Marker abp = mMap.addMarker(new MarkerOptions()
                 .position(ABP)
-                .title("Brisbane")
-                .snippet("Population: 2,074,200"));
+                .title("ABP")
+                .snippet("Clam: 1"));
 
-        mMap.addMarker(new MarkerOptions()
-                .position(WEAN)
-                .title("Sydney")
+        Marker wean = mMap.addMarker(new MarkerOptions()
+                .position(HOMETEST)
+                .title("Wean")
                 .snippet("Population: 4,627,300")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
 
-
-        mMap.addMarker(new MarkerOptions()
+        Marker scott = mMap.addMarker(new MarkerOptions()
                 .position(SCOTT)
-                .title("Melbourne")
+                .title("Scott Hall")
                 .snippet("Population: 4,137,400")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish)));
 
-        mMap.addMarker(new MarkerOptions()
+        Marker nsh = mMap.addMarker(new MarkerOptions()
                 .position(NSH)
-                .title("Perth")
+                .title("Newell Simon")
                 .snippet("Population: 1,738,800")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish2)));
+
+        markers.add(myMarker);
+        markers.add(abp);
+        markers.add(wean);
+        markers.add(scott);
+        markers.add(nsh);
     }
 
 
+//    @Override
+//    public boolean onMarkerClick(Marker marker) {
+//        if (marker != null) {
+//            // Retrieve the data from the marker.
+//            Integer clickCount = (Integer) marker.getTag();
+//
+//            // Check if a click count was set, then display the click count.
+//            if (clickCount != null) {
+//                clickCount = clickCount + 1;
+//                marker.setTag(clickCount);
+//                Toast.makeText(this,
+//                        marker.getTitle() +
+//                                " has been clicked " + clickCount + " times.",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//        // Return false to indicate that we have not consumed the event and that we wish
+//        // for the default behavior to occur (which is for the camera to move such that the
+//        // marker is centered and for the marker's info window to open, if it has one).
+//        return false;
+//    }
+
     @Override
     public boolean onMarkerClick(Marker marker) {
-        // Retrieve the data from the marker.
-        Integer clickCount = (Integer) marker.getTag();
-
-        // Check if a click count was set, then display the click count.
-        if (clickCount != null) {
-            clickCount = clickCount + 1;
-            marker.setTag(clickCount);
-            Toast.makeText(this,
-                    marker.getTitle() +
-                            " has been clicked " + clickCount + " times.",
-                    Toast.LENGTH_SHORT).show();
+        if (marker != null && markers != null && markers.contains(marker)) {
+            //pass the syntactic checks
+            LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+            if (haversineDistance(myLocation, marker.getPosition()) <= 1) {
+                //an easy way out. Only destroyable if they are closer or equal to 1km.
+                mClamCount += 1;
+                updateClamCount();
+                markers.remove(marker);
+                marker.remove();
+            }
         }
-
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
         // marker is centered and for the marker's info window to open, if it has one).
         return false;
     }
+
+    @Override
+    public void onCameraMoveStarted(int i) {
+
+    }
+
+    /**
+     * update the number of clams collected in the view
+     */
+    private void updateClamCount() {
+        if (mClamCountView == null) {
+            return;
+        }
+
+        mClamCountView.setText(getString(R.string.clam_counter, mClamCount));
+    }
+
+    /**
+     * update the number of energy collected in the view
+     */
+    private void updateEnergyCount() {
+        if (mEnergyCountView == null) {
+            return;
+        }
+
+        mEnergyCountView.setText(getString(R.string.energy_counter, mEnergyCount));
+    }
+
+
+    /**
+     * obtain the haversine distance of two location points
+     * @param loc1
+     * @param loc2
+     * @return
+     */
+    public static double haversineDistance(LatLng loc1, LatLng loc2) {
+        double R = 6372.8; // In kilometers
+        double lat1 = loc1.latitude;
+        double lon1 = loc1.longitude;
+        double lat2 = loc2.latitude;
+        double lon2 = loc2.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return R * c;
+    }
 }
+//
+//myMap.setOnInfoWindowClickListener(
+//        new OnInfoWindowClickListener(){
+//public void onInfoWindowClick(Marker marker){
+//        Intent nextScreen = new Intent(MapsActivity.this,EventActivity.class);
+//        nextScreen.putExtra("userId", "" + userId);
+//        nextScreen.putExtra("eventId", "" + eventId);
+//
+//        startActivityForResult(nextScreen, 0);
+//        }
+//        }
+//        )
