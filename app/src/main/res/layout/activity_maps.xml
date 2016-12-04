@@ -47,8 +47,8 @@
             android:id="@+id/energy_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="37dp"
-            android:paddingTop="20dp"
+            android:layout_toRightOf="@id/energy"
+            android:layout_toStartOf="@id/energy"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="30sp"
             />
@@ -65,11 +65,22 @@
             android:id="@+id/clam_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="37dp"
-            android:paddingTop="60dp"
+            android:layout_toRightOf="@id/clam"
+            android:layout_toStartOf="@id/clam"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="30sp"
             />
+
+        <ImageButton
+            android:id ="@+id/menu_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/menu"
+            />
+
+
 
     </RelativeLayout>
 

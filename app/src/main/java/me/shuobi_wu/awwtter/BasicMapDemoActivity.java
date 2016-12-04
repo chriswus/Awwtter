@@ -16,6 +16,9 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+
+//TODO: consider also to implement a parcelable when user rotates the phone.
 public class BasicMapDemoActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveStartedListener {
 
@@ -48,6 +53,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     //Views
     private TextView mClamCountView;
     private TextView mEnergyCountView;
+    private ImageButton mMenuButton;
 
     //Models
     private int mClamCount = 0;
@@ -130,6 +136,20 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         updateClamCount();
         mEnergyCountView = (TextView) findViewById(R.id.energy_counter);
         updateEnergyCount();
+        mMenuButton = (ImageButton) findViewById(R.id.menu_button);
+        //TODO: finish the menu activity
+        mMenuButton.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+
+                Intent i = new Intent(BasicMapDemoActivity.this, MenuActivity.class);
+                startActivity(i);
+                finish(); //should use the finish if you need to preserve memory
+                //other wise don't use it.
+            }
+
+        });
 
     }
 
@@ -152,6 +172,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         initMarkersToMap();
         mMap.setOnMarkerClickListener(this);
     }
+
 
     public static boolean isLocationEnabled(Context context) {
         int locationMode = 0;
@@ -178,50 +199,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
     }
 
+    @Override
+    public void onCameraMoveStarted(int i) {
 
-    private void initMarkersToMap() {
-        //marker of my current location. Might end up as a tile overlay
-        //current location is not updated
-        Marker myMarker = mMap.addMarker(new MarkerOptions()
-                .flat(true)
-                .icon(BitmapDescriptorFactory
-                        .fromResource(R.drawable.otter_orig))
-                .anchor(0.5f, 0.5f)
-                .position(
-                        new LatLng(mLocation.getLatitude(),
-                                mLocation.getLongitude())));
-        Log.e("LOCATION", mLocation.getLatitude() + ", " + mLocation.getLongitude());
-
-        Marker abp = mMap.addMarker(new MarkerOptions()
-                .position(ABP)
-                .title("ABP")
-                .snippet("Clam: 1"));
-
-        Marker wean = mMap.addMarker(new MarkerOptions()
-                .position(HOMETEST)
-                .title("Wean")
-                .snippet("Population: 4,627,300")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
-
-        Marker scott = mMap.addMarker(new MarkerOptions()
-                .position(SCOTT)
-                .title("Scott Hall")
-                .snippet("Population: 4,137,400")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish)));
-
-        Marker nsh = mMap.addMarker(new MarkerOptions()
-                .position(NSH)
-                .title("Newell Simon")
-                .snippet("Population: 1,738,800")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish2)));
-
-        markers.add(myMarker);
-        markers.add(abp);
-        markers.add(wean);
-        markers.add(scott);
-        markers.add(nsh);
     }
-
 
 //    @Override
 //    public boolean onMarkerClick(Marker marker) {
@@ -264,9 +245,47 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         return false;
     }
 
-    @Override
-    public void onCameraMoveStarted(int i) {
+    private void initMarkersToMap() {
+        //marker of my current location. Might end up as a tile overlay
+        //current location is not updated
+        Marker myMarker = mMap.addMarker(new MarkerOptions()
+                .flat(true)
+                .icon(BitmapDescriptorFactory
+                        .fromResource(R.drawable.otter_orig))
+                .anchor(0.5f, 0.5f)
+                .position(
+                        new LatLng(mLocation.getLatitude(),
+                                mLocation.getLongitude())));
+        Log.e("LOCATION", mLocation.getLatitude() + ", " + mLocation.getLongitude());
 
+        Marker abp = mMap.addMarker(new MarkerOptions()
+                .position(ABP)
+                .title("ABP")
+                .snippet("Clam: 1"));
+
+        Marker wean = mMap.addMarker(new MarkerOptions()
+                .position(HOMETEST)
+                .title("Wean")
+                .snippet("Population: 4,627,300")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish)));
+
+        Marker scott = mMap.addMarker(new MarkerOptions()
+                .position(SCOTT)
+                .title("Scott Hall")
+                .snippet("Population: 4,137,400")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
+
+        Marker nsh = mMap.addMarker(new MarkerOptions()
+                .position(NSH)
+                .title("Newell Simon")
+                .snippet("Population: 1,738,800")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish2)));
+
+        markers.add(myMarker);
+        markers.add(abp);
+        markers.add(wean);
+        markers.add(scott);
+        markers.add(nsh);
     }
 
     /**
