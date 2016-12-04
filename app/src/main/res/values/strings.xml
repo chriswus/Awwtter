@@ -3,4 +3,6 @@
     <string name="title_activity_maps">Map</string>
     <string name="clam_counter">%d</string>
     <string name="energy_counter">%d</string>
+    <string name="collect">New Item!</string>
+    <string name="ok">OK</string>
 </resources>

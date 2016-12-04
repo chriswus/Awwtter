@@ -1,9 +1,8 @@
-package me.shuobi_wu.awwtter;
+package me.shuobi_wu.awwtter.activity;
 
-import android.animation.ObjectAnimator;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.content.Context;
@@ -12,32 +11,24 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -47,9 +38,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.shuobi_wu.awwtter.MarkerInfo;
+import me.shuobi_wu.awwtter.MenuFragment;
+import me.shuobi_wu.awwtter.R;
 
-//TODO: consider also to implement a parcelable when user rotates the phone.
-//TODO: marker animation
+
+//TODO: add drawing to the view
+//TODO: Create menu fragment
+//TODO: marker animation (a view for collecting item) (property animator)
+//TODO: define marker info with item type
+//TODO: collection view
+//TODO: Fix UI
+//TODO: Fix Real-time Location Update
+//TODO: Fix Camera Focus
+//TODO: Marker Spawner
+//TODO: Code Cleanup
 public class BasicMapDemoActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveStartedListener {
 
@@ -192,7 +195,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
                     menuFlag = 1;
 
-
+                    Intent i = new Intent(BasicMapDemoActivity.this, MenuFragment.class);
+                    startActivity(i);
+                    finish(); //should use the finish if you need to preserve memory
+                    //other wise don't use it.
 
                 }
                 else {
@@ -203,11 +209,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                     menuFlag = 0;
                 }
 
-
-//                Intent i = new Intent(BasicMapDemoActivity.this, MenuActivity.class);
-//                startActivity(i);
-//                finish(); //should use the finish if you need to preserve memory
-                //other wise don't use it.
             }
 
         });
@@ -312,9 +313,17 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                 //then keep moving the image to create a earthquake effect
                 //TODO: just can't get the animation right
 
-                View shadow = (View) findViewById(R.id.shadow);
-                ObjectAnimator fadeAnim = ObjectAnimator.ofFloat(shadow, "alpha", 0.6f);
-                fadeAnim.start();
+                //directly create a
+//                final ObjectAnimator backgroundColorAnimator = ObjectAnimator.ofObject(shadow,
+//                        "backgroundColor",
+//                        new ArgbEvaluator(),
+//                        0xFFFFFFFF,
+//                        0x000000aa);
+//                backgroundColorAnimator.setDuration(300);
+//                backgroundColorAnimator.start();
+
+                //String markerTag = markerInfoMap.get(marker).getTag();
+                displayImgDialog("pick up", marker);
 
 
                 mClamCount += 1;
@@ -374,6 +383,44 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         markers.add(wean);
         markers.add(scott);
         markers.add(nsh);
+    }
+
+    /**
+     * a custom method to display image when clicking on a marker
+     */
+
+    //TODO: decide if this already exists
+    public void displayImgDialog(String tag, Marker marker) {
+        final View background =(View)findViewById(R.id.shadow);
+        background.setVisibility(View.VISIBLE);
+
+        final Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.pickup_item_dialog);
+        dialog.setTitle(R.string.collect);
+
+        TextView text = (TextView) dialog.findViewById(R.id.collect_item);
+        ImageView itemPic = (ImageView) dialog.findViewById(R.id.item_image);
+        decideImageToDisplay(itemPic, marker);
+
+        Button ok = (Button) dialog.findViewById(R.id.ok);
+        ok.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                background.setVisibility(View.INVISIBLE);
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+
+    }
+
+    /**
+     * helper method to determine image to display on the popup window
+     * @param marker
+     */
+    private void decideImageToDisplay(ImageView itemView, Marker marker) {
+        itemView.setImageDrawable(getResources().getDrawable(R.drawable.otter_clap));
     }
 
     /**
