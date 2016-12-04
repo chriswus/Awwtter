@@ -1,5 +1,6 @@
 package me.shuobi_wu.awwtter;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -11,12 +12,18 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -36,10 +43,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 //TODO: consider also to implement a parcelable when user rotates the phone.
+//TODO: marker animation
 public class BasicMapDemoActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveStartedListener {
 
@@ -59,22 +69,31 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private int mClamCount = 0;
     private int mEnergyCount = 0;
 
-
-
     private LocationManager mLocationManager;
     private GoogleMap mMap;
     private String mBestProvider;
     private Criteria mCriteria;
     private Location mLocation;
     private List<Marker> markers = new ArrayList<>();
+    private Map<Marker, MarkerInfo> markerInfoMap = new HashMap<>();
 
+    //Variables to hold animation
+
+    //Flags
+    private int menuFlag = 0;
+
+    /**
+     * initiate the map layout, set up a map fragment,
+     * and connect it to a location manager that could detect my location
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_maps);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        FragmentManager fm = getSupportFragmentManager();
+        SupportMapFragment mapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
         try {
             mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -91,9 +110,23 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+//        fm.beginTransaction()
+//                .replace(R.id.map, mapFragment, "Map")
+//                .commit();
+//        MenuFragment menuFragment = (MenuFragment) fm.findFragmentById(R.id.menu);
+//        fm.beginTransaction()
+//                .replace(R.id.menu, menuFragment, "Menu")
+//                .commit();
         initUIs();
+
     }
 
+    /**
+     * method to get the current location and focus the camera to my current location
+     * and to set up a map
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -130,6 +163,9 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         setupMap();
     }
 
+    /**
+     * method to initialize the UI elements
+     */
     private void initUIs() {
 
         mClamCountView = (TextView) findViewById(R.id.clam_counter);
@@ -138,22 +174,49 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         updateEnergyCount();
         mMenuButton = (ImageButton) findViewById(R.id.menu_button);
         //TODO: finish the menu activity
+        setMenuListener();
+
+    }
+
+    public void setMenuListener() {
         mMenuButton.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v)
             {
+                View mapView = getSupportFragmentManager().findFragmentById(R.id.map).getView();
+                if (menuFlag == 0) {
+                    AlphaAnimation alphaAnim = new AlphaAnimation(1.0f, 0.2f);
+                    alphaAnim.setDuration(3000); //3 second
+                    mapView.startAnimation(alphaAnim);
+                    //need to listen to when the animation ends
 
-                Intent i = new Intent(BasicMapDemoActivity.this, MenuActivity.class);
-                startActivity(i);
-                finish(); //should use the finish if you need to preserve memory
+                    menuFlag = 1;
+
+
+
+                }
+                else {
+                    AlphaAnimation alphaAnim = new AlphaAnimation(0.2f, 1.0f);
+                    alphaAnim.setDuration(3000); //3 second
+                    mapView.startAnimation(alphaAnim);
+                    //need to listen to when the animation ends
+                    menuFlag = 0;
+                }
+
+
+//                Intent i = new Intent(BasicMapDemoActivity.this, MenuActivity.class);
+//                startActivity(i);
+//                finish(); //should use the finish if you need to preserve memory
                 //other wise don't use it.
             }
 
         });
-
     }
 
 
+    /**
+     * method to initialize a map and its UIs
+     */
     private void setupMap() {
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -174,6 +237,11 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     }
 
 
+    /**
+     * method to check if location is enabled on a user's device
+     * @param context
+     * @return
+     */
     public static boolean isLocationEnabled(Context context) {
         int locationMode = 0;
         String locationProviders;
@@ -226,6 +294,11 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 //        return false;
 //    }
 
+    /**
+     * Trigger animation and destroying the marker when a marker is clicked
+     * @param marker
+     * @return
+     */
     @Override
     public boolean onMarkerClick(Marker marker) {
         if (marker != null && markers != null && markers.contains(marker)) {
@@ -233,6 +306,17 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
             if (haversineDistance(myLocation, marker.getPosition()) <= 1) {
                 //an easy way out. Only destroyable if they are closer or equal to 1km.
+                //sequence of animation to happen:
+                //first darken the background
+                //then display and scale the image
+                //then keep moving the image to create a earthquake effect
+                //TODO: just can't get the animation right
+
+                View shadow = (View) findViewById(R.id.shadow);
+                ObjectAnimator fadeAnim = ObjectAnimator.ofFloat(shadow, "alpha", 0.6f);
+                fadeAnim.start();
+
+
                 mClamCount += 1;
                 updateClamCount();
                 markers.remove(marker);
@@ -245,6 +329,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         return false;
     }
 
+
+    /**
+     * add markers to the map
+     */
     private void initMarkersToMap() {
         //marker of my current location. Might end up as a tile overlay
         //current location is not updated
@@ -333,6 +421,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         double c = 2 * Math.asin(Math.sqrt(a));
         return R * c;
     }
+
+
+
+
 }
 //
 //myMap.setOnInfoWindowClickListener(
