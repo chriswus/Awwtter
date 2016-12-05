@@ -17,7 +17,8 @@
         android:layout_centerHorizontal="true"
         android:visibility="invisible" />
 
-    <Button
+    <ImageButton
+        android:id="@+id/food_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/centerVerticalShim"
@@ -27,10 +28,12 @@
         android:background="#42A5F5"
         android:gravity="center"
         android:text="1"
-        android:textColor="#FFFFFF" >
-    </Button>
+        android:textColor="#FFFFFF"
+        android:src="@drawable/food">
+    </ImageButton>
 
-    <Button
+    <ImageButton
+        android:id="@+id/toy_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/centerVerticalShim"
@@ -40,10 +43,12 @@
         android:background="#EF5350"
         android:gravity="center"
         android:text="2"
-        android:textColor="#FFFFFF" >
-    </Button>
+        android:textColor="#FFFFFF"
+        android:src="@drawable/toy">
+    </ImageButton>
 
-    <Button
+    <ImageButton
+        android:id="@+id/album_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
@@ -53,10 +58,12 @@
         android:background="#66BB6A"
         android:gravity="center"
         android:text="3"
-        android:textColor="#FFFFFF" >
-    </Button>
+        android:textColor="#FFFFFF"
+        android:src="@drawable/album">
+    </ImageButton>
 
-    <Button
+    <ImageButton
+        android:id="@+id/settings_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
@@ -66,5 +73,6 @@
         android:background="#5C6BC0"
         android:gravity="center"
         android:text="4"
-        android:textColor="#FFFFFF" >
-    </Button></RelativeLayout>
+        android:textColor="#FFFFFF"
+        android:src="@drawable/settings">
+    </ImageButton></RelativeLayout>

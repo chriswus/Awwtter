@@ -1,6 +1,7 @@
 package me.shuobi_wu.awwtter.activity;
 
 import android.app.Dialog;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -18,6 +19,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -39,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.shuobi_wu.awwtter.MarkerInfo;
-import me.shuobi_wu.awwtter.MenuFragment;
+import me.shuobi_wu.awwtter.fragment.MenuFragment;
 import me.shuobi_wu.awwtter.R;
 
 
@@ -83,7 +85,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     //Variables to hold animation
 
     //Flags
-    private int menuFlag = 0;
+    private int mMenuFlag = 0;
 
     /**
      * initiate the map layout, set up a map fragment,
@@ -113,14 +115,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        fm.beginTransaction()
-//                .replace(R.id.map, mapFragment, "Map")
-//                .commit();
-//        MenuFragment menuFragment = (MenuFragment) fm.findFragmentById(R.id.menu);
-//        fm.beginTransaction()
-//                .replace(R.id.menu, menuFragment, "Menu")
-//                .commit();
         initUIs();
 
     }
@@ -176,7 +170,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         mEnergyCountView = (TextView) findViewById(R.id.energy_counter);
         updateEnergyCount();
         mMenuButton = (ImageButton) findViewById(R.id.menu_button);
-        //TODO: finish the menu activity
         setMenuListener();
 
     }
@@ -187,18 +180,23 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             public void onClick(View v)
             {
                 View mapView = getSupportFragmentManager().findFragmentById(R.id.map).getView();
-                if (menuFlag == 0) {
-                    AlphaAnimation alphaAnim = new AlphaAnimation(1.0f, 0.2f);
-                    alphaAnim.setDuration(3000); //3 second
-                    mapView.startAnimation(alphaAnim);
-                    //need to listen to when the animation ends
-
-                    menuFlag = 1;
-
-                    Intent i = new Intent(BasicMapDemoActivity.this, MenuFragment.class);
-                    startActivity(i);
-                    finish(); //should use the finish if you need to preserve memory
-                    //other wise don't use it.
+                if (mMenuFlag == 0) {
+                    mMenuFlag = 1;
+                    AlphaAnimation fadeAnim = new AlphaAnimation(1.0f, 0.2f);
+                    fadeAnim.setDuration(3000); //3 second
+                    fadeAnim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            openMenu();
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                    mapView.startAnimation(fadeAnim);
 
                 }
                 else {
@@ -206,7 +204,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                     alphaAnim.setDuration(3000); //3 second
                     mapView.startAnimation(alphaAnim);
                     //need to listen to when the animation ends
-                    menuFlag = 0;
+                    mMenuFlag = 0;
                 }
 
             }
@@ -214,6 +212,19 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         });
     }
 
+    /**
+     * helper method to open a menu
+     */
+    private void openMenu() {
+        if (mMenuFlag == 1) {
+            MenuFragment menuFrag = new MenuFragment();
+
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.add(R.id.map_view, menuFrag, "menu fragment");
+            transaction.addToBackStack("menu fragment");
+            transaction.commit();
+        }
+    }
 
     /**
      * method to initialize a map and its UIs
@@ -228,8 +239,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setScrollGesturesEnabled(false);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setCompassEnabled(false);
         mMap.getUiSettings().setIndoorLevelPickerEnabled(true);
         mMap.setBuildingsEnabled(true);
         mMap.setIndoorEnabled(true);
@@ -272,28 +283,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     public void onCameraMoveStarted(int i) {
 
     }
-
-//    @Override
-//    public boolean onMarkerClick(Marker marker) {
-//        if (marker != null) {
-//            // Retrieve the data from the marker.
-//            Integer clickCount = (Integer) marker.getTag();
-//
-//            // Check if a click count was set, then display the click count.
-//            if (clickCount != null) {
-//                clickCount = clickCount + 1;
-//                marker.setTag(clickCount);
-//                Toast.makeText(this,
-//                        marker.getTitle() +
-//                                " has been clicked " + clickCount + " times.",
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//        // Return false to indicate that we have not consumed the event and that we wish
-//        // for the default behavior to occur (which is for the camera to move such that the
-//        // marker is centered and for the marker's info window to open, if it has one).
-//        return false;
-//    }
 
     /**
      * Trigger animation and destroying the marker when a marker is clicked
@@ -419,6 +408,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
      * helper method to determine image to display on the popup window
      * @param marker
      */
+    //TODO: finish this
     private void decideImageToDisplay(ImageView itemView, Marker marker) {
         itemView.setImageDrawable(getResources().getDrawable(R.drawable.otter_clap));
     }
