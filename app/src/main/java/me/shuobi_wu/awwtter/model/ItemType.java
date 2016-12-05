@@ -1,4 +1,4 @@
-package me.shuobi_wu.awwtter;
+package me.shuobi_wu.awwtter.model;
 
 import java.util.HashMap;
 

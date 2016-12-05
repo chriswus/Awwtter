@@ -1,4 +1,4 @@
-package me.shuobi_wu.awwtter;
+package me.shuobi_wu.awwtter.view;
 
 import android.content.Context;
 import android.graphics.Canvas;

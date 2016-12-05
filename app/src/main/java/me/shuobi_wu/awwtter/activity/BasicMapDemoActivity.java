@@ -9,6 +9,7 @@ import android.location.Location;
 import android.content.Context;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -40,23 +41,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.shuobi_wu.awwtter.MarkerInfo;
+import me.shuobi_wu.awwtter.marker.MarkerInfo;
 import me.shuobi_wu.awwtter.fragment.MenuFragment;
 import me.shuobi_wu.awwtter.R;
+import me.shuobi_wu.awwtter.model.GameModel;
 
 
-//TODO: add drawing to the view
-//TODO: Create menu fragment
-//TODO: marker animation (a view for collecting item) (property animator)
+//TODO: complete parcelable to store and transfer data
+//TODO: migrate model-related stuff
 //TODO: define marker info with item type
 //TODO: collection view
 //TODO: Fix UI
 //TODO: Fix Real-time Location Update
 //TODO: Fix Camera Focus
 //TODO: Marker Spawner
-//TODO: Code Cleanup
+//TODO: Custom navigation
 public class BasicMapDemoActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveStartedListener {
+
+    //key for our bundle
+    private static final String GAME_MODEL_KEY = "GAME_DATA";
 
     //Constants
     private static final LatLng ABP = new LatLng(40.444205, -79.942117);
@@ -71,6 +75,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private ImageButton mMenuButton;
 
     //Models
+    private GameModel mGameModel;
     private int mClamCount = 0;
     private int mEnergyCount = 0;
 
@@ -95,9 +100,20 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_maps);
-        FragmentManager fm = getSupportFragmentManager();
+
+        // Here's how we restore the activity's state to what it was before android destroyed it
+        if (savedInstanceState != null) {
+            mGameModel = savedInstanceState.getParcelable(GAME_MODEL_KEY);
+        }
+
+        // Error handling in case our saveInstanceState parcelable is null or we were just created
+        if (mGameModel == null) {
+            mGameModel = new GameModel();
+        }
+
+
+            FragmentManager fm = getSupportFragmentManager();
         SupportMapFragment mapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
         try {
             mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -160,6 +176,11 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         setupMap();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(GAME_MODEL_KEY, mGameModel);
+    }
+
     /**
      * method to initialize the UI elements
      */
@@ -203,7 +224,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                     AlphaAnimation alphaAnim = new AlphaAnimation(0.2f, 1.0f);
                     alphaAnim.setDuration(3000); //3 second
                     mapView.startAnimation(alphaAnim);
-                    //need to listen to when the animation ends
                     mMenuFlag = 0;
                 }
 
@@ -295,25 +315,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             //pass the syntactic checks
             LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
             if (haversineDistance(myLocation, marker.getPosition()) <= 1) {
-                //an easy way out. Only destroyable if they are closer or equal to 1km.
-                //sequence of animation to happen:
-                //first darken the background
-                //then display and scale the image
-                //then keep moving the image to create a earthquake effect
-                //TODO: just can't get the animation right
 
-                //directly create a
-//                final ObjectAnimator backgroundColorAnimator = ObjectAnimator.ofObject(shadow,
-//                        "backgroundColor",
-//                        new ArgbEvaluator(),
-//                        0xFFFFFFFF,
-//                        0x000000aa);
-//                backgroundColorAnimator.setDuration(300);
-//                backgroundColorAnimator.start();
-
-                //String markerTag = markerInfoMap.get(marker).getTag();
                 displayImgDialog("pick up", marker);
-
 
                 mClamCount += 1;
                 updateClamCount();
@@ -435,6 +438,14 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         mEnergyCountView.setText(getString(R.string.energy_counter, mEnergyCount));
     }
 
+    private void startNavigation(LatLng source, LatLng dest) {
+        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                "http://maps.google.com/maps?" + "saddr="+ source.latitude + "," + source.longitude
+                        + "&daddr=" + dest.latitude + "," + dest.longitude));
+        intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
+        startActivity(intent);
+    }
+
 
     /**
      * obtain the haversine distance of two location points
@@ -459,19 +470,4 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         return R * c;
     }
 
-
-
-
 }
-//
-//myMap.setOnInfoWindowClickListener(
-//        new OnInfoWindowClickListener(){
-//public void onInfoWindowClick(Marker marker){
-//        Intent nextScreen = new Intent(MapsActivity.this,EventActivity.class);
-//        nextScreen.putExtra("userId", "" + userId);
-//        nextScreen.putExtra("eventId", "" + eventId);
-//
-//        startActivityForResult(nextScreen, 0);
-//        }
-//        }
-//        )

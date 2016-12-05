@@ -1,4 +1,4 @@
-package me.shuobi_wu.awwtter;
+package me.shuobi_wu.awwtter.marker;
 
 import android.graphics.Bitmap;
 
@@ -68,12 +68,54 @@ public class MarkerInfo {
      *
      * @return the image that should be shown. If null, no image should be displayed
      */
-    public Bitmap getImage() {return mImage;}
+    public Bitmap getImage() {
+        return mImage;
+    }
 
     /**
      * @param newImage the image that is set, which could be null if it is not supposed to be visible
      */
-    public void setImage(Bitmap newImage) {mImage = newImage;}
+    public void setImage(Bitmap newImage) {
+        mImage = newImage;
+    }
 
+    public int getValue() {
+        return mValue;
+    }
 
+    public void setValue(int mValue) {
+        this.mValue = mValue;
+    }
+
+    public int getCategory() {
+        return mCategory;
+    }
+
+    public void setCategory(int mCategory) {
+        this.mCategory = mCategory;
+    }
+
+    public LatLng getLocation() {
+        return mLocation;
+    }
+
+    public void setLocation(LatLng mLocation) {
+        this.mLocation = mLocation;
+    }
+
+    public String getTag() {
+        return mTag;
+    }
+
+    public void setTag(String mTag) {
+        this.mTag = mTag;
+    }
+
+    public double getFrequency() {
+        return mFrequency;
+    }
+
+    public void setFrequency(double mFrequency) {
+        this.mFrequency = mFrequency;
+    }
 }
