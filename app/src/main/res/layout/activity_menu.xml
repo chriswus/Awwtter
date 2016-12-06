@@ -1,23 +1,24 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
     <View
         android:id="@+id/centerVerticalShim"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="50dp"
         android:layout_centerVertical="true"
         android:visibility="invisible" />
 
     <View
         android:id="@+id/centerHorizontalShim"
-        android:layout_width="0dp"
+        android:layout_width="50dp"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:visibility="invisible" />
 
-    <ImageButton
+    <Button
         android:id="@+id/food_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,14 +26,16 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/centerHorizontalShim"
-        android:background="#42A5F5"
+        android:background="@drawable/button_bg"
         android:gravity="center"
-        android:text="1"
+        android:text="Food"
         android:textColor="#FFFFFF"
-        android:src="@drawable/food">
-    </ImageButton>
+        android:textSize="20sp"
+        android:drawableTop="@drawable/food"
+        android:paddingTop="30dip">
+    </Button>
 
-    <ImageButton
+    <Button
         android:id="@+id/toy_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -40,14 +43,16 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/centerHorizontalShim"
-        android:background="#EF5350"
+        android:background="@drawable/button_bg"
         android:gravity="center"
-        android:text="2"
+        android:text="Toys"
         android:textColor="#FFFFFF"
-        android:src="@drawable/toy">
-    </ImageButton>
+        android:textSize="20sp"
+        android:drawableTop="@drawable/toy"
+        android:paddingTop="30dip">
+    </Button>
 
-    <ImageButton
+    <Button
         android:id="@+id/album_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -55,14 +60,16 @@
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/centerVerticalShim"
         android:layout_toLeftOf="@+id/centerHorizontalShim"
-        android:background="#66BB6A"
+        android:background="@drawable/button_bg"
         android:gravity="center"
-        android:text="3"
+        android:text="Album"
         android:textColor="#FFFFFF"
-        android:src="@drawable/album">
-    </ImageButton>
+        android:textSize="20sp"
+        android:drawableTop="@drawable/album"
+        android:paddingTop="30dip">
+    </Button>
 
-    <ImageButton
+    <Button
         android:id="@+id/settings_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -70,9 +77,11 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/centerVerticalShim"
         android:layout_toRightOf="@+id/centerHorizontalShim"
-        android:background="#5C6BC0"
+        android:background="@drawable/button_bg"
         android:gravity="center"
-        android:text="4"
+        android:text="Settings"
         android:textColor="#FFFFFF"
-        android:src="@drawable/settings">
-    </ImageButton></RelativeLayout>
+        android:textSize="20sp"
+        android:drawableTop="@drawable/settings"
+        android:paddingTop="30dip">
+    </Button></RelativeLayout>

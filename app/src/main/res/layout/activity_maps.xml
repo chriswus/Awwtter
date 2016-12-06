@@ -17,16 +17,6 @@
             android:layout_height="match_parent"
             tools:context="mypackage.MapsActivity"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#2200ff00"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:background="@drawable/gradientmap"/>
-
 
         <!--<pl.droidsonroids.gif.GifTextView-->
             <!--android:layout_width="match_parent"-->
@@ -40,15 +30,15 @@
             android:layout_height="wrap_content"
             android:src="@drawable/energy"
             android:paddingLeft="17dp"
-            android:paddingTop="50dp"/>
+            android:paddingTop="20dp"/>
 
         <TextView
             android:id="@+id/energy_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/energy"
-            android:layout_toStartOf="@+id/energy"
-            android:textColor="@android:color/holo_red_dark"
+            android:paddingLeft="50dp"
+            android:paddingTop="15dp"
+            android:textColor="@color/text_dark"
             android:textSize="30sp"
             />
 
@@ -58,15 +48,15 @@
             android:layout_height="wrap_content"
             android:src="@drawable/clam"
             android:paddingLeft="17dp"
-            android:paddingTop="90dp"/>
+            android:paddingTop="60dp"/>
 
         <TextView
             android:id="@+id/clam_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/clam"
-            android:layout_toStartOf="@+id/clam"
-            android:textColor="@android:color/holo_red_dark"
+            android:paddingLeft="50dp"
+            android:paddingTop="55dp"
+            android:textColor="@color/text_dark"
             android:textSize="30sp"
             />
 

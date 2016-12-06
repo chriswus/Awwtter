@@ -2,14 +2,17 @@ package me.shuobi_wu.awwtter.fragment;
 
 import android.app.FragmentTransaction;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import me.shuobi_wu.awwtter.R;
+import me.shuobi_wu.awwtter.activity.AlbumMenuActivity;
 
 /**
  * a custom fragment that displays a list of available menu items
@@ -30,7 +33,7 @@ public class MenuFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_menu, container, false);
-        ImageButton food = (ImageButton) view.findViewById(R.id.food_button);
+        Button food = (Button) view.findViewById(R.id.food_button);
         food.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -38,7 +41,7 @@ public class MenuFragment extends Fragment {
             }
         });
 
-        ImageButton toy = (ImageButton) view.findViewById(R.id.toy_button);
+        Button toy = (Button) view.findViewById(R.id.toy_button);
         toy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,7 +49,7 @@ public class MenuFragment extends Fragment {
             }
         });
 
-        ImageButton album = (ImageButton) view.findViewById(R.id.album_button);
+        Button album = (Button) view.findViewById(R.id.album_button);
         album.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,7 +57,7 @@ public class MenuFragment extends Fragment {
             }
         });
 
-        ImageButton settings = (ImageButton) view.findViewById(R.id.settings_button);
+        Button settings = (Button) view.findViewById(R.id.settings_button);
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +71,7 @@ public class MenuFragment extends Fragment {
      * helper method to open a designated menu
      */
     private void open(String menu) {
+        Intent intent = null;
         if (menu != null && menu != "") {
             Fragment frag = null;
             switch(menu) {
@@ -79,6 +83,7 @@ public class MenuFragment extends Fragment {
                     break;
                 case ALBUM_MENU:
                     frag = new AlbumMenuFragment();
+                    intent = new Intent(getActivity(), AlbumMenuActivity.class);
                     break;
                 case SETTINGS_MENU:
                     frag = new SettingsMenuFragment();
@@ -86,7 +91,11 @@ public class MenuFragment extends Fragment {
                 default:
                     break;
             }
-            if (frag != null) {
+            if (intent != null) {
+                startActivity(intent);
+            }
+            //TODO: fix this
+            else if (frag != null) {
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 transaction.add(R.id.map_view, frag, menu);
                 transaction.addToBackStack(menu);

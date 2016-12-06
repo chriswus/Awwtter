@@ -51,10 +51,17 @@
             </intent-filter>
         </activity>
         <!--my menu activity that displays settings and collections. need to change later-->
-        <activity  android:name=".MenuActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
+        <activity
+            android:name=".activity.AlbumMenuActivity" >
+        </activity>
+        <activity
+            android:name=".activity.FoodMenuActivity" >
+        </activity>
+        <activity
+            android:name=".activity.ToyMenuActivity" >
+        </activity>
+        <activity
+            android:name=".activity.SettingsMenuActivity" >
         </activity>
     </application>
 

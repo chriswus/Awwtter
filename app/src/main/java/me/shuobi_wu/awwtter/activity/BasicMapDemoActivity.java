@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.location.Criteria;
 import android.location.Location;
 import android.content.Context;
@@ -33,26 +34,24 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import me.shuobi_wu.awwtter.marker.MarkerInfo;
+import me.shuobi_wu.awwtter.helper.LatLngInterpolator;
 import me.shuobi_wu.awwtter.fragment.MenuFragment;
 import me.shuobi_wu.awwtter.R;
 import me.shuobi_wu.awwtter.model.GameModel;
 
+import static me.shuobi_wu.awwtter.helper.MarkerAnimation.animateMarkerToGB;
 
-//TODO: complete parcelable to store and transfer data
-//TODO: migrate model-related stuff
+
+
 //TODO: define marker info with item type
 //TODO: collection view
-//TODO: Fix UI
-//TODO: Fix Real-time Location Update
 //TODO: Fix Camera Focus
 //TODO: Marker Spawner
 //TODO: Custom navigation
@@ -75,6 +74,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private ImageButton mMenuButton;
 
     //Models
+    private Marker mCharacter;
     private GameModel mGameModel;
     private int mClamCount = 0;
     private int mEnergyCount = 0;
@@ -85,9 +85,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private Criteria mCriteria;
     private Location mLocation;
     private List<Marker> markers = new ArrayList<>();
-    private Map<Marker, MarkerInfo> markerInfoMap = new HashMap<>();
-
-    //Variables to hold animation
 
     //Flags
     private int mMenuFlag = 0;
@@ -128,6 +125,24 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                         R.anim.push_up_in);
 
             }
+            // Define a listener that responds to location updates
+            LocationListener locationListener = new LocationListener() {
+                public void onLocationChanged(Location location) {
+                    // Called when a new location is found by the network location provider.
+                    double lat = location.getLatitude();
+                    double lng = location.getLongitude();
+                    LatLng newPosition = new LatLng(lat, lng);
+                    animateMarkerToGB(mCharacter, newPosition, new LatLngInterpolator.Linear());
+                    mGameModel.addEnergy(5);
+                    mCharacter.setPosition(newPosition);
+                }
+
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+                public void onProviderEnabled(String provider) {}
+
+                public void onProviderDisabled(String provider) {}
+            };
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -143,6 +158,22 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            boolean success = googleMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.style_json));
+
+            if (!success) {
+                Log.e("Style", "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("Style", "Can't find style. Error: ", e);
+        }
+        // Position the map's camera near Sydney, Australia.
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-34, 151)));
+
         if (isLocationEnabled(this)) {
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             mCriteria = new Criteria();
@@ -165,13 +196,16 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                 mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         } else {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ActivityCompat.checkSelfPermission(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                    && ActivityCompat.checkSelfPermission(this,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            mLocationManager.requestLocationUpdates(mBestProvider, 1000, 0, (LocationListener) this);
+            mLocationManager.requestLocationUpdates(mBestProvider, 1000, 0,
+                    (LocationListener) this);
         }
         setupMap();
     }
@@ -191,6 +225,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         mEnergyCountView = (TextView) findViewById(R.id.energy_counter);
         updateEnergyCount();
         mMenuButton = (ImageButton) findViewById(R.id.menu_button);
+        mMenuButton.setBackground(null);
         setMenuListener();
 
     }
@@ -204,7 +239,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                 if (mMenuFlag == 0) {
                     mMenuFlag = 1;
                     AlphaAnimation fadeAnim = new AlphaAnimation(1.0f, 0.2f);
-                    fadeAnim.setDuration(3000); //3 second
+                    fadeAnim.setDuration(1000); //1 second
                     fadeAnim.setAnimationListener(new Animation.AnimationListener() {
                         @Override
                         public void onAnimationStart(Animation animation) {
@@ -222,7 +257,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
                 }
                 else {
                     AlphaAnimation alphaAnim = new AlphaAnimation(0.2f, 1.0f);
-                    alphaAnim.setDuration(3000); //3 second
+                    alphaAnim.setDuration(1000); //3 second
                     mapView.startAnimation(alphaAnim);
                     mMenuFlag = 0;
                 }
@@ -251,9 +286,11 @@ public class BasicMapDemoActivity extends FragmentActivity implements
      */
     private void setupMap() {
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
             return;
         }
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -261,8 +298,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         mMap.getUiSettings().setScrollGesturesEnabled(false);
         mMap.getUiSettings().setZoomControlsEnabled(false);
         mMap.getUiSettings().setCompassEnabled(false);
-        mMap.getUiSettings().setIndoorLevelPickerEnabled(true);
-        mMap.setBuildingsEnabled(true);
+        mMap.getUiSettings().setIndoorLevelPickerEnabled(false);
+        mMap.setBuildingsEnabled(false);
         mMap.setIndoorEnabled(true);
         initMarkersToMap();
         mMap.setOnMarkerClickListener(this);
@@ -299,11 +336,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
     }
 
-    @Override
-    public void onCameraMoveStarted(int i) {
-
-    }
-
     /**
      * Trigger animation and destroying the marker when a marker is clicked
      * @param marker
@@ -315,13 +347,18 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             //pass the syntactic checks
             LatLng myLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
             if (haversineDistance(myLocation, marker.getPosition()) <= 1) {
-
-                displayImgDialog("pick up", marker);
-
-                mClamCount += 1;
-                updateClamCount();
+                if (marker.getTitle().equals("gift")) {
+                    displayImgDialog("pick up", marker);
+                }
+                else {
+                    mGameModel.addClam(2);
+                    updateClamCount();
+                }
                 markers.remove(marker);
                 marker.remove();
+            }
+            else {
+                startNavigation(myLocation, marker.getPosition());
             }
         }
         // Return false to indicate that we have not consumed the event and that we wish
@@ -337,10 +374,10 @@ public class BasicMapDemoActivity extends FragmentActivity implements
     private void initMarkersToMap() {
         //marker of my current location. Might end up as a tile overlay
         //current location is not updated
-        Marker myMarker = mMap.addMarker(new MarkerOptions()
-                .flat(true)
+        mCharacter = mMap.addMarker(new MarkerOptions()
+                .title("Me")
                 .icon(BitmapDescriptorFactory
-                        .fromResource(R.drawable.otter_orig))
+                        .fromResource(R.drawable.gift_box))
                 .anchor(0.5f, 0.5f)
                 .position(
                         new LatLng(mLocation.getLatitude(),
@@ -350,27 +387,28 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         Marker abp = mMap.addMarker(new MarkerOptions()
                 .position(ABP)
                 .title("ABP")
-                .snippet("Clam: 1"));
+                .snippet("Clam: 1")
+                .icon(BitmapDescriptorFactory
+                        .fromResource(R.drawable.gift_box)));
 
         Marker wean = mMap.addMarker(new MarkerOptions()
                 .position(HOMETEST)
                 .title("Wean")
-                .snippet("Population: 4,627,300")
+                .snippet("Clam: 2")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish)));
 
         Marker scott = mMap.addMarker(new MarkerOptions()
                 .position(SCOTT)
                 .title("Scott Hall")
-                .snippet("Population: 4,137,400")
+                .snippet("Ball: 1")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
 
         Marker nsh = mMap.addMarker(new MarkerOptions()
                 .position(NSH)
                 .title("Newell Simon")
-                .snippet("Population: 1,738,800")
+                .snippet("Clam: 2")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish2)));
 
-        markers.add(myMarker);
         markers.add(abp);
         markers.add(wean);
         markers.add(scott);
@@ -413,7 +451,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
      */
     //TODO: finish this
     private void decideImageToDisplay(ImageView itemView, Marker marker) {
-        itemView.setImageDrawable(getResources().getDrawable(R.drawable.otter_clap));
+        itemView.setImageDrawable(getResources().getDrawable(R.drawable.otter_shy));
     }
 
     /**
@@ -424,7 +462,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             return;
         }
 
-        mClamCountView.setText(getString(R.string.clam_counter, mClamCount));
+        mClamCountView.setText(getString(R.string.clam_counter, mGameModel.getClamCount()));
     }
 
     /**
@@ -435,7 +473,7 @@ public class BasicMapDemoActivity extends FragmentActivity implements
             return;
         }
 
-        mEnergyCountView.setText(getString(R.string.energy_counter, mEnergyCount));
+        mEnergyCountView.setText(getString(R.string.energy_counter, mGameModel.getEnergyCount()));
     }
 
     private void startNavigation(LatLng source, LatLng dest) {
@@ -470,4 +508,8 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         return R * c;
     }
 
+    @Override
+    public void onCameraMoveStarted(int i) {
+
+    }
 }
