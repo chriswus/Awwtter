@@ -171,8 +171,6 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         } catch (Resources.NotFoundException e) {
             Log.e("Style", "Can't find style. Error: ", e);
         }
-        // Position the map's camera near Sydney, Australia.
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(-34, 151)));
 
         if (isLocationEnabled(this)) {
             mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -375,9 +373,9 @@ public class BasicMapDemoActivity extends FragmentActivity implements
         //marker of my current location. Might end up as a tile overlay
         //current location is not updated
         mCharacter = mMap.addMarker(new MarkerOptions()
-                .title("Me")
+                .title("Awwwww")
                 .icon(BitmapDescriptorFactory
-                        .fromResource(R.drawable.gift_box))
+                        .fromResource(R.drawable.otter))
                 .anchor(0.5f, 0.5f)
                 .position(
                         new LatLng(mLocation.getLatitude(),
@@ -386,26 +384,26 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
         Marker abp = mMap.addMarker(new MarkerOptions()
                 .position(ABP)
-                .title("ABP")
+                .title("gift")
                 .snippet("Clam: 1")
                 .icon(BitmapDescriptorFactory
                         .fromResource(R.drawable.gift_box)));
 
         Marker wean = mMap.addMarker(new MarkerOptions()
                 .position(HOMETEST)
-                .title("Wean")
+                .title("fish")
                 .snippet("Clam: 2")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish)));
 
         Marker scott = mMap.addMarker(new MarkerOptions()
                 .position(SCOTT)
-                .title("Scott Hall")
+                .title("ball")
                 .snippet("Ball: 1")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
 
         Marker nsh = mMap.addMarker(new MarkerOptions()
                 .position(NSH)
-                .title("Newell Simon")
+                .title("fish")
                 .snippet("Clam: 2")
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.fish2)));
 
@@ -510,6 +508,9 @@ public class BasicMapDemoActivity extends FragmentActivity implements
 
     @Override
     public void onCameraMoveStarted(int i) {
-
+        final double currentLatitude = mLocation.getLatitude();
+        final double currentLongitude = mLocation.getLongitude();
+        LatLng loc1 = new LatLng(currentLatitude, currentLongitude);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc1));
     }
 }
